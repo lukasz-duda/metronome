@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Metronome</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+      crossorigin="anonymous"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col">
+          <h1>Metronome</h1>
+          <h2 id="duration">00:00</h2>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-2">
+          <div class="row gy-1">
+            <div class="col-12">
+              <button
+                type="button"
+                class="btn btn-primary"
+                onclick="startMetronome(100)"
+              >
+                100
+              </button>
+            </div>
+            <div class="col-12">
+              <button
+                type="button"
+                class="btn btn-primary"
+                onclick="startMetronome(120)"
+              >
+                120
+              </button>
+            </div>
+            <div class="col-12">
+              <button
+                type="button"
+                class="btn btn-primary"
+                onclick="startMetronome(130)"
+              >
+                130
+              </button>
+            </div>
+            <div class="col-12">
+              <button
+                type="button"
+                class="btn btn-primary"
+                onclick="startMetronome(140)"
+              >
+                140
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="col-10">
+          <button
+            type="button"
+            class="btn btn-primary"
+            onclick="stopMetronome()"
+          >
+            STOP
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            onclick="resetDuration()"
+          >
+            RESET
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let metronomeIntervalId;
+      let timerIntervalId;
+
+      let bpm = 100;
+
+      let startTime = null;
+      let totalDuration = 0;
+
+      function startMetronome(requestedBpm) {
+        bpm = requestedBpm;
+
+        const interval = (60 / bpm) * 1000;
+        stopMetronome();
+        startTime = new Date();
+        metronomeIntervalId = setInterval(onBeat, interval);
+        timerIntervalId = setInterval(onTimer, 1000);
+      }
+
+      function stopMetronome() {
+        clearInterval(metronomeIntervalId);
+        clearInterval(timerIntervalId);
+        totalDuration = calculateTotalDuration();
+        startTime = null;
+        printDuration();
+      }
+
+      function calculateTotalDuration() {
+        if (startTime) {
+          const endTime = new Date();
+          const partDuration = endTime - startTime;
+          return totalDuration + partDuration;
+        } else {
+          return totalDuration;
+        }
+      }
+
+      function printDuration() {
+        const duration = calculateTotalDuration();
+        const element = document.getElementById("duration");
+        const durationDate = new Date(duration);
+        element.textContent = `${durationDate
+          .getMinutes()
+          .toString()
+          .padStart(2, "0")}:${durationDate
+          .getSeconds()
+          .toString()
+          .padStart(2, "0")}`;
+      }
+
+      function onBeat() {
+        playSound();
+      }
+
+      function playSound() {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        osc.type = "triangle";
+        osc.frequency.value = 600;
+        const gainNode = ctx.createGain();
+        gainNode.gain.value = 0.1;
+        osc.connect(gainNode);
+        gainNode.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.05);
+      }
+
+      function onTimer() {
+        printDuration();
+      }
+
+      function resetDuration() {
+        totalDuration = 0;
+        printDuration();
+      }
+    </script>
+  </body>
+</html>
