@@ -1,7 +1,8 @@
+import { play } from "./audio";
 import { useMetronome } from "./metronome";
 
 export function SimpleMetronome() {
-  const { start, stop } = useMetronome();
+  const { start, stop } = useMetronome({ onBeat: play });
 
   return (
     <>
