@@ -1,28 +1,40 @@
-import { useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 export interface MetronomeProps {
+  bpm?: number;
   onBeat: () => void;
 }
 
 export interface MetronomeResult {
-  start: (bpm: number) => void;
+  start: () => void;
   stop: () => void;
 }
 
-export function useMetronome({ onBeat }: MetronomeProps) {
+export function useMetronome({ bpm = 100, onBeat }: MetronomeProps) {
   const intervalId = useRef<number | null>(null);
 
-  function start(bpm: number) {
-    const delay = (60 / bpm) * 1000;
-    stop();
-    intervalId.current = setInterval(onBeat, delay);
-  }
-
-  function stop() {
+  const stop = useCallback(function () {
     if (intervalId.current) {
       clearInterval(intervalId.current);
+      intervalId.current = null;
     }
-  }
+  }, []);
+
+  const start = useCallback(
+    function () {
+      const delay = (60 / bpm) * 1000;
+      stop();
+      intervalId.current = setInterval(onBeat, delay);
+    },
+    [bpm, onBeat, stop],
+  );
+
+  useEffect(() => {
+    if (intervalId.current) {
+      stop();
+      start();
+    }
+  }, [start, stop]);
 
   const result: MetronomeResult = {
     start,
