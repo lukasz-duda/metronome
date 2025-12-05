@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useMetronome } from "./metronome";
-import { Button, Flex, Progress, Space, Typography } from "antd";
+import { Button, Progress, Space, Typography } from "antd";
 import { play } from "./audio";
 
 interface AdvancedMetronomeProps {
   parts: Part[];
 }
 
-interface Part {
+export interface Part {
   id: string;
   name: string;
   bpm: number;
@@ -42,8 +42,12 @@ export function AdvancedMetronome({ parts }: AdvancedMetronomeProps) {
   }, [end, stop]);
 
   function handleStart() {
-    setCurrentBeat(0);
+    reset();
     start();
+  }
+
+  function reset() {
+    setCurrentBeat(0);
   }
 
   return (
@@ -55,7 +59,8 @@ export function AdvancedMetronome({ parts }: AdvancedMetronomeProps) {
         >
           Start
         </Button>
-        <Button onClick={stop}>stop</Button>
+        <Button onClick={stop}>Stop</Button>
+        <Button onClick={reset}>Reset</Button>
       </Space>
       <Typography.Text>Current beat: {currentBeat}</Typography.Text>
       <Typography.Text>Current BPM: {bpm}</Typography.Text>
@@ -90,7 +95,7 @@ function calculateRanges({
       endBeat: endBeat,
       current,
       progress: current
-        ? ((currentBeat - beatIndex) / part.length) * 100
+        ? Math.round(((currentBeat - beatIndex) / part.length) * 100)
         : previous
           ? 100
           : 0,
