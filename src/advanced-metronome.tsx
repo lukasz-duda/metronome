@@ -4,7 +4,15 @@ import { Button, Progress, Space, Typography } from "antd";
 import { play } from "./audio";
 
 export interface AdvancedMetronomeConfig {
+  units: Unit[];
   parts: Part[];
+}
+
+export interface Unit {
+  name: string;
+  description: string;
+  length: number;
+  lengthUnit: string;
 }
 
 export interface Part {
@@ -12,12 +20,13 @@ export interface Part {
   name: string;
   bpm: number;
   length: number;
+  lengthUnit: string;
 }
 
-export function AdvancedMetronome({ parts }: AdvancedMetronomeConfig) {
+export function AdvancedMetronome({ units, parts }: AdvancedMetronomeConfig) {
   const [currentBeat, setCurrentBeat] = useState(0);
 
-  const ranges: PartRange[] = calculateRanges({ parts, currentBeat });
+  const ranges: PartRange[] = calculateRanges({ parts, currentBeat, units });
 
   const endBeat = useMemo(
     () => ranges.at(ranges.length - 1)?.endBeat,
@@ -74,9 +83,11 @@ export function AdvancedMetronome({ parts }: AdvancedMetronomeConfig) {
 function calculateRanges({
   parts,
   currentBeat,
+  units,
 }: {
   parts: Part[];
   currentBeat: number;
+  units: Unit[];
 }): PartRange[] {
   const ranges: PartRange[] = [];
 
@@ -85,7 +96,7 @@ function calculateRanges({
   for (let partIndex = 0; partIndex < parts.length; partIndex++) {
     const part = parts[partIndex];
 
-    const endBeat = beatIndex + part.length;
+    const endBeat = beatIndex + partLength({ part, units });
     const current = beatIndex <= currentBeat && currentBeat <= endBeat;
     const previous = beatIndex < currentBeat;
 
@@ -95,7 +106,9 @@ function calculateRanges({
       endBeat: endBeat,
       current,
       progress: current
-        ? Math.round(((currentBeat - beatIndex) / part.length) * 100)
+        ? Math.round(
+            ((currentBeat - beatIndex) / partLength({ part, units })) * 100,
+          )
         : previous
           ? 100
           : 0,
@@ -106,6 +119,25 @@ function calculateRanges({
   }
 
   return ranges;
+}
+
+function partLength({ part, units }: { part: Part; units: Unit[] }): number {
+  return part.length * unitLength({ queryUnit: part.lengthUnit, units });
+}
+
+function unitLength({
+  queryUnit,
+  units,
+}: {
+  queryUnit: string;
+  units: Unit[];
+}): number {
+  const unit = units.find((u) => u.name === queryUnit);
+  if (unit) {
+    return unit.length * unitLength({ queryUnit: unit.lengthUnit, units });
+  } else {
+    return 1;
+  }
 }
 
 interface PartRange {
