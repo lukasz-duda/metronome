@@ -1,40 +1,53 @@
 import { useState, type SyntheticEvent } from "react";
-import { AdvancedMetronome, type Part } from "./advanced-metronome";
-import { Flex } from "antd";
+import {
+  AdvancedMetronome,
+  type AdvancedMetronomeConfig,
+} from "./advanced-metronome";
+import { Button, Flex, Space } from "antd";
 import TextArea from "antd/es/input/TextArea";
 
-const initialParts = [
-  {
-    id: "p1",
-    name: "Part 1",
-    bpm: 100,
-    length: 4,
-  },
+const initialConfig: AdvancedMetronomeConfig = {
+  parts: [
+    {
+      id: "p1",
+      name: "Part 1",
+      bpm: 100,
+      length: 4,
+    },
 
-  {
-    id: "p2",
-    name: "Part 2",
-    bpm: 150,
-    length: 8,
-  },
-];
+    {
+      id: "p2",
+      name: "Part 2",
+      bpm: 150,
+      length: 8,
+    },
+  ],
+};
 
 export function App() {
-  const [parts, setParts] = useState<Part[]>(() => {
-    const jsonParts = localStorage.getItem("parts");
-    if (jsonParts) {
-      const parsed = JSON.parse(jsonParts);
-      return parsed as Part[];
+  const [config, setConfig] = useState<AdvancedMetronomeConfig>(() => {
+    const jsonConfig = localStorage.getItem("config");
+    if (jsonConfig) {
+      const parsed = JSON.parse(jsonConfig);
+      return parsed as AdvancedMetronomeConfig;
     } else {
-      return initialParts;
+      return initialConfig;
     }
   });
 
-  function changeParts(event: SyntheticEvent<HTMLTextAreaElement>) {
-    const jsonParts = event.currentTarget.value;
-    const parsed = JSON.parse(jsonParts);
-    setParts(parsed);
-    localStorage.setItem("parts", jsonParts);
+  function changeConfig(event: SyntheticEvent<HTMLTextAreaElement>) {
+    const jsonConfig = event.currentTarget.value;
+    try {
+      const parsed = JSON.parse(jsonConfig);
+      setConfig(parsed);
+      localStorage.setItem("config", jsonConfig);
+    } catch {
+      /* empty */
+    }
+  }
+
+  function resetConfig() {
+    setConfig(initialConfig);
   }
 
   return (
@@ -42,11 +55,14 @@ export function App() {
       vertical
       gap={12}
     >
+      <Space>
+        <Button onClick={resetConfig}>Resetuj konfigurację</Button>
+      </Space>
       <TextArea
-        value={JSON.stringify(parts)}
-        onChange={changeParts}
+        value={JSON.stringify(config)}
+        onChange={changeConfig}
       />
-      <AdvancedMetronome parts={parts} />
+      <AdvancedMetronome {...config} />
     </Flex>
   );
 }

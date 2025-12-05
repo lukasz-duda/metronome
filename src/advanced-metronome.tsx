@@ -3,7 +3,7 @@ import { useMetronome } from "./metronome";
 import { Button, Progress, Space, Typography } from "antd";
 import { play } from "./audio";
 
-interface AdvancedMetronomeProps {
+export interface AdvancedMetronomeConfig {
   parts: Part[];
 }
 
@@ -14,7 +14,7 @@ export interface Part {
   length: number;
 }
 
-export function AdvancedMetronome({ parts }: AdvancedMetronomeProps) {
+export function AdvancedMetronome({ parts }: AdvancedMetronomeConfig) {
   const [currentBeat, setCurrentBeat] = useState(0);
 
   const ranges: PartRange[] = calculateRanges({ parts, currentBeat });
