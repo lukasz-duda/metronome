@@ -20,7 +20,7 @@ export function SimpleMetronome() {
         value={bpm}
         onChange={changeBpm}
       />
-      <button onClick={() => start(bpm)}>play</button>
+      <button onClick={() => start()}>play</button>
       <button onClick={stop}>stop</button>
     </>
   );
