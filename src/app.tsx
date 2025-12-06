@@ -3,9 +3,10 @@ import {
   AdvancedMetronome,
   type AdvancedMetronomeConfig,
 } from "./advanced-metronome";
-import { Button, Flex, Space } from "antd";
+import { Button, Flex, Space, Tabs } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import { initialConfig } from "./initial-config";
+import { RollbackOutlined } from "@ant-design/icons";
 
 export function App() {
   const [config, setConfig] = useState<AdvancedMetronomeConfig>(() => {
@@ -34,18 +35,39 @@ export function App() {
   }
 
   return (
-    <Flex
-      vertical
-      gap={12}
-    >
-      <Space>
-        <Button onClick={resetConfig}>Resetuj konfigurację</Button>
-      </Space>
-      <TextArea
-        value={JSON.stringify(config)}
-        onChange={changeConfig}
-      />
-      <AdvancedMetronome {...config} />
-    </Flex>
+    <Tabs
+      items={[
+        {
+          key: "metronome",
+          label: "Metronome",
+          children: <AdvancedMetronome {...config} />,
+        },
+        {
+          key: "config",
+          label: "Configuration",
+          children: (
+            <Flex
+              vertical
+              gap={12}
+            >
+              <TextArea
+                value={JSON.stringify(config)}
+                onChange={changeConfig}
+                style={{ height: "calc(100vh - 150px)" }}
+              />
+              <Space>
+                <Button
+                  icon={<RollbackOutlined />}
+                  danger
+                  onClick={resetConfig}
+                >
+                  Resetuj konfigurację
+                </Button>
+              </Space>
+            </Flex>
+          ),
+        },
+      ]}
+    />
   );
 }

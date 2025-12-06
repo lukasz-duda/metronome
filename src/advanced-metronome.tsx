@@ -2,31 +2,55 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useMetronome } from "./metronome";
 import { Button, Progress, Space, Typography } from "antd";
 import { play } from "./audio";
+import {
+  CaretRightOutlined,
+  PauseOutlined,
+  StepBackwardOutlined,
+} from "@ant-design/icons";
 
 export interface AdvancedMetronomeConfig {
   units: Unit[];
+  tempos: Tempo[];
   parts: Part[];
 }
 
 export interface Unit {
+  id: string;
   name: string;
-  description: string;
   length: number;
   lengthUnit: string;
+}
+
+export interface Tempo {
+  id: string;
+  name: string;
+  bpm: number;
 }
 
 export interface Part {
   id: string;
   name: string;
-  bpm: number;
+  tempoId: string;
   length: number;
-  lengthUnit: string;
+  lengthUnitId: string;
+  repetitions?: number;
+  pauseLength?: number;
+  pauseLengthUnitId?: string;
 }
 
-export function AdvancedMetronome({ units, parts }: AdvancedMetronomeConfig) {
+export function AdvancedMetronome({
+  units,
+  parts,
+  tempos,
+}: AdvancedMetronomeConfig) {
   const [currentBeat, setCurrentBeat] = useState(0);
 
-  const ranges: PartRange[] = calculateRanges({ parts, currentBeat, units });
+  const ranges: PartRange[] = calculateRanges({
+    parts,
+    currentBeat,
+    units,
+    tempos,
+  });
 
   const endBeat = useMemo(
     () => ranges.at(ranges.length - 1)?.endBeat,
@@ -40,7 +64,8 @@ export function AdvancedMetronome({ units, parts }: AdvancedMetronomeConfig) {
     setCurrentBeat((prevBeat) => prevBeat + 1);
   }, []);
 
-  const bpm = ranges.find((range) => range.current)?.part.bpm;
+  const currentTempoId = ranges.find((range) => range.current)?.part.tempoId;
+  const bpm = tempos.find((tempo) => tempo.id === currentTempoId)?.bpm ?? 100;
 
   const { start, stop } = useMetronome({ bpm, onBeat: handleBeat });
 
@@ -51,7 +76,6 @@ export function AdvancedMetronome({ units, parts }: AdvancedMetronomeConfig) {
   }, [end, stop]);
 
   function handleStart() {
-    reset();
     start();
   }
 
@@ -59,20 +83,38 @@ export function AdvancedMetronome({ units, parts }: AdvancedMetronomeConfig) {
     setCurrentBeat(0);
   }
 
+  const totalMinutes = ranges.reduce(
+    (acumulator, range) => acumulator + range.minutes,
+    0,
+  );
+
   return (
     <Space vertical>
       <Space>
         <Button
+          icon={<CaretRightOutlined />}
           type="primary"
           onClick={handleStart}
         >
           Start
         </Button>
-        <Button onClick={stop}>Stop</Button>
-        <Button onClick={reset}>Reset</Button>
+        <Button
+          icon={<PauseOutlined />}
+          onClick={stop}
+        >
+          Stop
+        </Button>
+        <Button
+          icon={<StepBackwardOutlined />}
+          onClick={reset}
+        >
+          Reset
+        </Button>
       </Space>
-      <Typography.Text>Current beat: {currentBeat}</Typography.Text>
-      <Typography.Text>Current BPM: {bpm}</Typography.Text>
+      <Typography.Text>
+        Current beat: {currentBeat} | Current BPM: {bpm} | Total time:{" "}
+        {totalMinutes.toFixed(1)} minutes
+      </Typography.Text>
       {ranges.map((range) => (
         <DisplayPart range={range} />
       ))}
@@ -84,10 +126,12 @@ function calculateRanges({
   parts,
   currentBeat,
   units,
+  tempos,
 }: {
   parts: Part[];
   currentBeat: number;
   units: Unit[];
+  tempos: Tempo[];
 }): PartRange[] {
   const ranges: PartRange[] = [];
 
@@ -96,9 +140,13 @@ function calculateRanges({
   for (let partIndex = 0; partIndex < parts.length; partIndex++) {
     const part = parts[partIndex];
 
-    const endBeat = beatIndex + partLength({ part, units });
+    const length = partLength({ part, units });
+    const endBeat = beatIndex + length;
     const current = beatIndex <= currentBeat && currentBeat <= endBeat;
     const previous = beatIndex < currentBeat;
+    const beats = endBeat - beatIndex;
+    const bpm = tempos.find((tempo) => tempo.id === part.tempoId)?.bpm ?? 100;
+    const minutes = beats / bpm;
 
     const range: PartRange = {
       part: part,
@@ -106,12 +154,11 @@ function calculateRanges({
       endBeat: endBeat,
       current,
       progress: current
-        ? Math.round(
-            ((currentBeat - beatIndex) / partLength({ part, units })) * 100,
-          )
+        ? Math.round(((currentBeat - beatIndex) / length) * 100)
         : previous
           ? 100
           : 0,
+      minutes,
     };
 
     ranges.push(range);
@@ -122,7 +169,16 @@ function calculateRanges({
 }
 
 function partLength({ part, units }: { part: Part; units: Unit[] }): number {
-  return part.length * unitLength({ queryUnit: part.lengthUnit, units });
+  const repetitions = part.repetitions ?? 1;
+  const partLength =
+    part.length * unitLength({ queryUnit: part.lengthUnitId, units });
+  const pauseLength =
+    part.pauseLength && part.pauseLengthUnitId
+      ? part.pauseLength *
+        unitLength({ queryUnit: part.pauseLengthUnitId, units })
+      : 0;
+  const partAndPauseLength = partLength + pauseLength;
+  return repetitions * partAndPauseLength;
 }
 
 function unitLength({
@@ -132,7 +188,7 @@ function unitLength({
   queryUnit: string;
   units: Unit[];
 }): number {
-  const unit = units.find((u) => u.name === queryUnit);
+  const unit = units.find((u) => u.id === queryUnit);
   if (unit) {
     return unit.length * unitLength({ queryUnit: unit.lengthUnit, units });
   } else {
@@ -146,16 +202,19 @@ interface PartRange {
   endBeat: number;
   current: boolean;
   progress: number;
+  minutes: number;
 }
 
 function DisplayPart({ range }: { range: PartRange }) {
+  const beats = range.endBeat - range.startBeat;
   return (
     <>
-      <Typography.Title>{range.part.name}</Typography.Title>
-      <Progress
-        type="circle"
-        percent={range.progress}
-      />
+      <div>
+        <Typography.Text>
+          {`${range.part.name} | ${range.minutes.toFixed(1)} minutes | ${beats} beats <${range.startBeat}-${range.endBeat}>`}
+        </Typography.Text>
+      </div>
+      <Progress percent={range.progress} />
     </>
   );
 }
