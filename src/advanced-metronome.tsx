@@ -7,6 +7,7 @@ import {
   PauseOutlined,
   StepBackwardOutlined,
 } from "@ant-design/icons";
+import { useWakeLock } from "./wake-lock";
 
 export interface AdvancedMetronomeConfig {
   units: Unit[];
@@ -75,8 +76,26 @@ export function AdvancedMetronome({
     }
   }, [end, stop]);
 
+  const { releaseWakeLock, requestScreenWakeLock } = useWakeLock();
+
+  const [started, setStarted] = useState(false);
+
   function handleStart() {
+    if (started) {
+      return;
+    }
+
     start();
+    requestScreenWakeLock();
+    setStarted(true);
+  }
+
+  function handleStop() {
+    if (started) {
+      stop();
+      releaseWakeLock();
+      setStarted(false);
+    }
   }
 
   function reset() {
@@ -100,7 +119,7 @@ export function AdvancedMetronome({
         </Button>
         <Button
           icon={<PauseOutlined />}
-          onClick={stop}
+          onClick={handleStop}
         >
           Stop
         </Button>
