@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useMetronome } from "./metronome";
 import { Button, Flex, Progress, Space, Typography } from "antd";
-import { play } from "./audio";
 import {
   CaretRightOutlined,
   PauseOutlined,
@@ -61,11 +60,11 @@ export function AdvancedMetronome({
   const end = currentBeat === endBeat;
 
   const handleBeat = useCallback(function () {
-    play();
     setCurrentBeat((prevBeat) => prevBeat + 1);
   }, []);
 
-  const currentTempoId = ranges.find((range) => range.current)?.part.tempoId;
+  const currentTempoId =
+    ranges.find((range) => range.current)?.part.tempoId ?? parts[0].tempoId;
   const bpm = tempos.find((tempo) => tempo.id === currentTempoId)?.bpm ?? 100;
 
   const { start, stop } = useMetronome({ bpm, onBeat: handleBeat });
