@@ -132,6 +132,7 @@ export function AdvancedMetronome({
       <div>
         {ranges.map((range) => (
           <DisplayPart
+            key={range.part.id}
             range={range}
             onStepBackward={setCurrentBeat}
           />
