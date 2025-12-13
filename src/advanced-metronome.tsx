@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useMetronome } from "./metronome";
-import { Button, Progress, Space, Typography } from "antd";
+import { Button, Flex, Progress, Space, Typography } from "antd";
 import { play } from "./audio";
 import {
   CaretRightOutlined,
@@ -98,50 +98,46 @@ export function AdvancedMetronome({
     }
   }
 
-  function reset() {
-    setCurrentBeat(0);
-  }
-
   const totalMinutes = ranges.reduce(
     (acumulator, range) => acumulator + range.minutes,
     0,
   );
 
   return (
-    <Space vertical>
-      <Space>
-        {started ? (
-          <Button
-            icon={<PauseOutlined />}
-            type="primary"
-            onClick={handleStop}
-          >
-            Pause
-          </Button>
-        ) : (
-          <Button
-            icon={<CaretRightOutlined />}
-            type="primary"
-            onClick={handleStart}
-          >
-            Play
-          </Button>
-        )}
-        <Button
-          icon={<StepBackwardOutlined />}
-          onClick={reset}
-        >
-          Reset
-        </Button>
-      </Space>
-      <Typography.Text>
-        Current beat: {currentBeat} | Current BPM: {bpm} | Total time:{" "}
-        {totalMinutes.toFixed(1)} minutes
-      </Typography.Text>
-      {ranges.map((range) => (
-        <DisplayPart range={range} />
-      ))}
-    </Space>
+    <Flex
+      vertical
+      gap={12}
+    >
+      <Flex justify="space-between">
+        <Typography.Text>
+          Current beat: {currentBeat} | Current BPM: {bpm} | Total time:{" "}
+          {totalMinutes.toFixed(1)} minutes
+        </Typography.Text>
+        <Space>
+          {started ? (
+            <Button
+              icon={<PauseOutlined />}
+              type="primary"
+              onClick={handleStop}
+            />
+          ) : (
+            <Button
+              icon={<CaretRightOutlined />}
+              type="primary"
+              onClick={handleStart}
+            />
+          )}
+        </Space>
+      </Flex>
+      <div>
+        {ranges.map((range) => (
+          <DisplayPart
+            range={range}
+            onStepBackward={setCurrentBeat}
+          />
+        ))}
+      </div>
+    </Flex>
   );
 }
 
@@ -164,16 +160,17 @@ function calculateRanges({
     const part = parts[partIndex];
 
     const length = partLength({ part, units });
-    const endBeat = beatIndex + length;
-    const current = beatIndex <= currentBeat && currentBeat <= endBeat;
-    const previous = beatIndex < currentBeat;
-    const beats = endBeat - beatIndex;
+    const startBeat = beatIndex + 1;
+    const endBeat = startBeat + length - 1;
+    const current = startBeat <= currentBeat && currentBeat <= endBeat;
+    const previous = startBeat < currentBeat;
+    const beats = endBeat - startBeat + 1;
     const bpm = tempos.find((tempo) => tempo.id === part.tempoId)?.bpm ?? 100;
     const minutes = beats / bpm;
 
     const range: PartRange = {
       part: part,
-      startBeat: beatIndex,
+      startBeat,
       endBeat: endBeat,
       current,
       progress: current
@@ -228,16 +225,27 @@ interface PartRange {
   minutes: number;
 }
 
-function DisplayPart({ range }: { range: PartRange }) {
-  const beats = range.endBeat - range.startBeat;
+function DisplayPart({
+  range,
+  onStepBackward,
+}: {
+  range: PartRange;
+  onStepBackward: (beatIndex: number) => void;
+}) {
   return (
     <>
       <div>
         <Typography.Text>
-          {`${range.part.name} | ${range.minutes.toFixed(1)} minutes | ${beats} beats <${range.startBeat}-${range.endBeat}>`}
+          {`${range.part.name} | ${range.minutes.toFixed(1)} minutes | ${range.part.length} beats <${range.startBeat}-${range.endBeat}>`}
         </Typography.Text>
       </div>
-      <Progress percent={range.progress} />
+      <Flex gap={12}>
+        <Progress percent={range.progress} />
+        <Button
+          icon={<StepBackwardOutlined />}
+          onClick={() => onStepBackward(range.startBeat - 1)}
+        />
+      </Flex>
     </>
   );
 }
