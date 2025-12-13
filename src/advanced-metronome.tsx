@@ -110,19 +110,23 @@ export function AdvancedMetronome({
   return (
     <Space vertical>
       <Space>
-        <Button
-          icon={<CaretRightOutlined />}
-          type="primary"
-          onClick={handleStart}
-        >
-          Start
-        </Button>
-        <Button
-          icon={<PauseOutlined />}
-          onClick={handleStop}
-        >
-          Stop
-        </Button>
+        {started ? (
+          <Button
+            icon={<PauseOutlined />}
+            type="primary"
+            onClick={handleStop}
+          >
+            Pause
+          </Button>
+        ) : (
+          <Button
+            icon={<CaretRightOutlined />}
+            type="primary"
+            onClick={handleStart}
+          >
+            Play
+          </Button>
+        )}
         <Button
           icon={<StepBackwardOutlined />}
           onClick={reset}
