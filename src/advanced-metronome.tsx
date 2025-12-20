@@ -207,7 +207,7 @@ function DisplayPart({
     <>
       <div>
         <Typography.Text>
-          {`${range.part.name} | ${range.minutes.toFixed(1)} minutes | ${range.part.length} beats <${range.startBeat}-${range.endBeat}>`}
+          {`${range.part.name} | ${range.minutes.toFixed(1)} minutes | ${range.endBeat - range.startBeat + 1} beats <${range.startBeat}-${range.endBeat}>`}
         </Typography.Text>
       </div>
       <Flex gap={12}>
