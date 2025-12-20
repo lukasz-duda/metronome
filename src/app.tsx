@@ -1,11 +1,8 @@
 import { useState, type SyntheticEvent } from "react";
-import {
-  AdvancedMetronome,
-  type AdvancedMetronomeConfig,
-} from "./advanced-metronome";
+import { AdvancedMetronome } from "./advanced-metronome";
 import { Button, Flex, Space, Tabs } from "antd";
 import TextArea from "antd/es/input/TextArea";
-import { initialConfig } from "./initial-config";
+import { initialConfig, type AdvancedMetronomeConfig } from "./config";
 import { RollbackOutlined } from "@ant-design/icons";
 
 export function App() {

@@ -7,36 +7,7 @@ import {
   StepBackwardOutlined,
 } from "@ant-design/icons";
 import { useWakeLock } from "./wake-lock";
-
-export interface AdvancedMetronomeConfig {
-  units: Unit[];
-  tempos: Tempo[];
-  parts: Part[];
-}
-
-export interface Unit {
-  id: string;
-  name: string;
-  length: number;
-  lengthUnit: string;
-}
-
-export interface Tempo {
-  id: string;
-  name: string;
-  bpm: number;
-}
-
-export interface Part {
-  id: string;
-  name: string;
-  tempoId: string;
-  length: number;
-  lengthUnitId: string;
-  repetitions?: number;
-  pauseLength?: number;
-  pauseLengthUnitId?: string;
-}
+import type { AdvancedMetronomeConfig, Part, Tempo, Unit } from "./config";
 
 export function AdvancedMetronome({
   units,

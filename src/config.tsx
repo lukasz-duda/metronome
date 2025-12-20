@@ -1,4 +1,32 @@
-import type { AdvancedMetronomeConfig } from "./advanced-metronome";
+export interface AdvancedMetronomeConfig {
+  units: Unit[];
+  tempos: Tempo[];
+  parts: Part[];
+}
+
+export interface Unit {
+  id: string;
+  name: string;
+  length: number;
+  lengthUnit: string;
+}
+
+export interface Tempo {
+  id: string;
+  name: string;
+  bpm: number;
+}
+
+export interface Part {
+  id: string;
+  name: string;
+  tempoId: string;
+  length: number;
+  lengthUnitId: string;
+  repetitions?: number;
+  pauseLength?: number;
+  pauseLengthUnitId?: string;
+}
 
 export const initialConfig: AdvancedMetronomeConfig = {
   units: [
