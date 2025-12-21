@@ -39,7 +39,8 @@ export function calculateProgress({
         part: part,
         units: partUnits.map((partUnit) => ({
           unit: partUnit.unit,
-          progress: (currentBeat % partUnit.beatLength) / partUnit.beatLength * 100,
+          progress:
+            ((currentBeat % partUnit.beatLength) / partUnit.beatLength) * 100,
         })),
       };
       return partProgess;
@@ -48,7 +49,30 @@ export function calculateProgress({
   return progress;
 }
 
-interface UnitBeatLength {
+export interface UnitBeatLength {
   unit: Unit;
   beatLength: number;
 }
+
+export function calculateBeatLength({
+  unitId,
+  units,
+}: {
+  unitId: string;
+  units: Unit[];
+}): UnitBeatLength[] {
+  const result: UnitBeatLength[] = [
+    {
+      unit: units.find((unit) => unit.id === unitId) ?? beatUnit,
+      beatLength: units[0].length ?? beatUnit.length,
+    },
+  ];
+  return result;
+}
+
+const beatUnit: Unit = {
+  id: "beat",
+  name: "Beat",
+  length: 1,
+  lengthUnit: "beat",
+};

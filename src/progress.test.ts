@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { calculateProgress, type Progress } from "./progress";
+import {
+  calculateBeatLength,
+  calculateProgress,
+  type Progress,
+  type UnitBeatLength,
+} from "./progress";
 import type { Part, Unit } from "./config";
 
 describe("calculateProgress", () => {
@@ -42,6 +47,30 @@ describe("calculateProgress", () => {
       };
 
       expect(progress).toStrictEqual(expected);
+    });
+  });
+});
+
+describe("calculateBeatLength", () => {
+  describe("empty unit", () => {
+    const unit1: Unit = {
+      id: "u1",
+      name: "",
+      length: 4,
+      lengthUnit: "beat",
+    };
+    const result = calculateBeatLength({
+      unitId: unit1.id,
+      units: [unit1],
+    });
+    it("returns 1 beat", () => {
+      const expected: UnitBeatLength[] = [
+        {
+          beatLength: 4,
+          unit: unit1,
+        },
+      ];
+      expect(result).toStrictEqual(expected);
     });
   });
 });
