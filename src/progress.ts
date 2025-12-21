@@ -58,21 +58,22 @@ export function calculateBeatLength({
   unitId,
   units,
 }: {
-  unitId: string;
+  unitId?: string;
   units: Unit[];
-}): UnitBeatLength[] {
-  const result: UnitBeatLength[] = [
-    {
-      unit: units.find((unit) => unit.id === unitId) ?? beatUnit,
-      beatLength: units[0].length ?? beatUnit.length,
-    },
-  ];
-  return result;
-}
+}): number {
+  if (unitId === undefined || unitId === "beat") {
+    return 1;
+  }
 
-const beatUnit: Unit = {
-  id: "beat",
-  name: "Beat",
-  length: 1,
-  lengthUnit: "beat",
-};
+  const found = units.find((unit) => unit.id === unitId);
+
+  if (found) {
+    const beatLength = calculateBeatLength({
+      unitId: found.lengthUnit,
+      units: units,
+    });
+    return found.length * beatLength;
+  } else {
+    throw Error(`Unit ${unitId} not found.`);
+  }
+}
