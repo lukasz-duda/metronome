@@ -1,27 +1,29 @@
 import { describe, expect, it } from "vitest";
 import { calculateProgress, type Progress } from "./progress";
-import type { Part } from "./config";
+import type { Part, Unit } from "./config";
 
 describe("calculateProgress", () => {
-  describe("before one beat part", () => {
-    it("returns position zero", () => {
+  describe("1 part 1 unit", () => {
+    it("returns unit progress", () => {
       const part1: Part = {
-        id: "p1id",
-        name: "p1",
-        tempoId: "t1",
-        length: 1,
+        id: "p1",
+        name: "",
+        tempoId: "",
+        length: 2,
         lengthUnitId: "u1",
       };
+
+      const unit1: Unit = {
+        id: "u1",
+        name: "",
+        length: 4,
+        lengthUnit: "beat",
+      };
+
       const progress = calculateProgress({
-        currentBeat: 0,
-        units: [
-          {
-            id: "u1id",
-            name: "u1",
-            length: 1,
-            lengthUnit: "beat",
-          },
-        ],
+        currentBeat: 5,
+
+        units: [unit1],
         parts: [part1],
       });
 
@@ -31,8 +33,8 @@ describe("calculateProgress", () => {
             part: part1,
             units: [
               {
-                beatLength: 1,
-                position: 0,
+                progress: 25,
+                unit: unit1,
               },
             ],
           },

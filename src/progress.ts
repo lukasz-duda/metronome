@@ -16,8 +16,8 @@ export interface PartProgress {
 }
 
 export interface UnitProgress {
-  position: number;
-  beatLength: number;
+  unit: Unit;
+  progress: number;
 }
 
 export function calculateProgress({
@@ -27,15 +27,28 @@ export function calculateProgress({
 }: Position): Progress {
   const progress: Progress = {
     parts: parts.map((part) => {
+      const partUnits: UnitBeatLength[] = units.map((unit) => {
+        const unitBeatLength: UnitBeatLength = {
+          unit: unit,
+          beatLength: unit.length,
+        };
+        return unitBeatLength;
+      });
+
       const partProgess: PartProgress = {
         part: part,
-        units: units.map((unit) => ({
-          beatLength: unit.length,
-          position: currentBeat,
+        units: partUnits.map((partUnit) => ({
+          unit: partUnit.unit,
+          progress: (currentBeat % partUnit.beatLength) / partUnit.beatLength * 100,
         })),
       };
       return partProgess;
     }),
   };
   return progress;
+}
+
+interface UnitBeatLength {
+  unit: Unit;
+  beatLength: number;
 }
