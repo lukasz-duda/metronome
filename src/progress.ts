@@ -77,3 +77,57 @@ export function calculateBeatLength({
     throw Error(`Unit ${unitId} not found.`);
   }
 }
+
+export function isPause({
+  currentBeat,
+  partRange,
+  units,
+}: {
+  currentBeat: number;
+  partRange: PartRange;
+  units: Unit[];
+}) {
+  const part = partRange.part;
+  const repeatCount = part.repetitions ?? 1;
+
+  if (part.pauseLength && part.pauseLength > 0 && part.pauseLengthUnitId) {
+    const partBeatLength =
+      part.length *
+      calculateBeatLength({
+        unitId: part.lengthUnitId,
+        units,
+      });
+
+    const pauseBeatLength =
+      part.pauseLength *
+      calculateBeatLength({
+        unitId: part.pauseLengthUnitId,
+        units,
+      });
+
+    const totalBeatLength = partBeatLength + pauseBeatLength;
+
+    for (let repatIndex = 0; repatIndex < repeatCount; repatIndex++) {
+      const partStartBeat = partRange.startBeat + repatIndex * totalBeatLength;
+      const partEndBeat = partStartBeat + partBeatLength - 1;
+      const pauseStartBeat = partEndBeat + 1;
+      const pauseEndBeat = pauseStartBeat + pauseBeatLength - 1;
+
+      if (currentBeat >= partStartBeat && currentBeat <= partEndBeat) {
+        return false;
+      }
+
+      if (currentBeat >= pauseStartBeat && currentBeat <= pauseEndBeat) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+export interface PartRange {
+  part: Part;
+  startBeat: number;
+  endBeat: number;
+}

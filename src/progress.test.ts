@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   calculateBeatLength,
   calculateProgress,
+  isPause,
+  type PartRange,
   type Progress,
 } from "./progress";
 import type { Part, Unit } from "./config";
@@ -91,6 +93,82 @@ describe("calculateBeatLength", () => {
 
         expect(result).toStrictEqual(24);
       });
+    });
+  });
+});
+
+describe("isPause", () => {
+  const part1: Part = {
+    id: "",
+    name: "",
+    tempoId: "",
+    length: 3,
+    lengthUnitId: "beat",
+    pauseLength: 2,
+    pauseLengthUnitId: "beat",
+    repetitions: 2,
+  };
+
+  const partRange1: PartRange = {
+    part: part1,
+    startBeat: 1,
+    endBeat: 5,
+  };
+
+  const units = [
+    {
+      id: "u1",
+      name: "",
+      length: 4,
+      lengthUnit: "beat",
+    },
+  ];
+
+  describe("at the beginning of the first part", () => {
+    const pause = isPause({ currentBeat: 1, partRange: partRange1, units });
+
+    it("returns false", () => {
+      expect(pause).toStrictEqual(false);
+    });
+  });
+
+  describe("at the end of the first part", () => {
+    const pause = isPause({ currentBeat: 3, partRange: partRange1, units });
+
+    it("returns false", () => {
+      expect(pause).toStrictEqual(false);
+    });
+  });
+
+  describe("at the beginning of the first pause", () => {
+    const pause = isPause({ currentBeat: 4, partRange: partRange1, units });
+
+    it("returns true", () => {
+      expect(pause).toStrictEqual(true);
+    });
+  });
+
+  describe("at the end of the first pause", () => {
+    const pause = isPause({ currentBeat: 5, partRange: partRange1, units });
+
+    it("returns true", () => {
+      expect(pause).toStrictEqual(true);
+    });
+  });
+
+  describe("at the beginning of the repeated part", () => {
+    const pause = isPause({ currentBeat: 6, partRange: partRange1, units });
+
+    it("returns false", () => {
+      expect(pause).toStrictEqual(false);
+    });
+  });
+
+  describe("at the beginning of the repeated pause", () => {
+    const pause = isPause({ currentBeat: 9, partRange: partRange1, units });
+
+    it("returns true", () => {
+      expect(pause).toStrictEqual(true);
     });
   });
 });

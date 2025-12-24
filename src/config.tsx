@@ -23,9 +23,9 @@ export interface Part {
   tempoId: string;
   length: number;
   lengthUnitId: string;
-  repetitions?: number;
   pauseLength?: number;
   pauseLengthUnitId?: string;
+  repetitions?: number;
 }
 
 export const initialConfig: AdvancedMetronomeConfig = {
