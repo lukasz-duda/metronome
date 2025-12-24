@@ -30,7 +30,7 @@ export function calculateProgress({
       const partUnits: UnitBeatLength[] = units.map((unit) => {
         const unitBeatLength: UnitBeatLength = {
           unit: unit,
-          beatLength: unit.length,
+          beatLength: calculateBeatLength({ unitId: unit.id, units }),
         };
         return unitBeatLength;
       });
@@ -39,8 +39,9 @@ export function calculateProgress({
         part: part,
         units: partUnits.map((partUnit) => ({
           unit: partUnit.unit,
-          progress:
+          progress: Math.round(
             ((currentBeat % partUnit.beatLength) / partUnit.beatLength) * 100,
+          ),
         })),
       };
       return partProgess;

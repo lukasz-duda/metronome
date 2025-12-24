@@ -9,7 +9,14 @@ import {
 import type { Part, Unit } from "./config";
 
 describe("calculateProgress", () => {
-  describe("1 part 1 unit", () => {
+  const unit1: Unit = {
+    id: "u1",
+    name: "",
+    length: 4,
+    lengthUnit: "beat",
+  };
+
+  describe("beat unit part", () => {
     it("returns unit progress", () => {
       const part1: Part = {
         id: "p1",
@@ -17,13 +24,6 @@ describe("calculateProgress", () => {
         tempoId: "",
         length: 2,
         lengthUnitId: "u1",
-      };
-
-      const unit1: Unit = {
-        id: "u1",
-        name: "",
-        length: 4,
-        lengthUnit: "beat",
       };
 
       const progress = calculateProgress({
@@ -48,6 +48,100 @@ describe("calculateProgress", () => {
       };
 
       expect(progress).toStrictEqual(expected);
+    });
+  });
+
+  describe("complex unit part", () => {
+    const unit2: Unit = {
+      id: "u2",
+      name: "",
+      length: 3,
+      lengthUnit: "u1",
+    };
+
+    const unit3: Unit = {
+      id: "u3",
+      name: "",
+      length: 2,
+      lengthUnit: "u2",
+    };
+
+    const part1: Part = {
+      id: "p1",
+      name: "",
+      tempoId: "",
+      length: 2,
+      lengthUnitId: "u3",
+    };
+
+    describe("before part start", () => {
+      const progress = calculateProgress({
+        currentBeat: 0,
+
+        units: [unit1, unit2, unit3],
+        parts: [part1],
+      });
+
+      it("returns progresses of component units", () => {
+        const expected: Progress = {
+          parts: [
+            {
+              part: part1,
+              units: [
+                {
+                  progress: 0,
+                  unit: unit1,
+                },
+                {
+                  progress: 0,
+                  unit: unit2,
+                },
+                {
+                  progress: 0,
+                  unit: unit3,
+                },
+              ],
+            },
+          ],
+        };
+
+        expect(progress).toStrictEqual(expected);
+      });
+    });
+
+    describe("before just after part start", () => {
+      const progress = calculateProgress({
+        currentBeat: 1,
+
+        units: [unit1, unit2, unit3],
+        parts: [part1],
+      });
+
+      it("returns progresses of component units", () => {
+        const expected: Progress = {
+          parts: [
+            {
+              part: part1,
+              units: [
+                {
+                  progress: 25,
+                  unit: unit1,
+                },
+                {
+                  progress: 8,
+                  unit: unit2,
+                },
+                {
+                  progress: 4,
+                  unit: unit3,
+                },
+              ],
+            },
+          ],
+        };
+
+        expect(progress).toStrictEqual(expected);
+      });
     });
   });
 });
