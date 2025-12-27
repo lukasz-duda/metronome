@@ -3,7 +3,7 @@ import type { Part, Unit } from "./config";
 export interface Position {
   currentBeat: number;
   units: Unit[];
-  parts: Part[];
+  partRanges: PartRange[];
 }
 
 export interface Progress {
@@ -11,7 +11,8 @@ export interface Progress {
 }
 
 export interface PartProgress {
-  part: Part;
+  pause: boolean;
+  partRange: PartRange;
   units: UnitProgress[];
 }
 
@@ -22,12 +23,23 @@ export interface UnitProgress {
 
 export function calculateProgress({
   currentBeat,
-  parts,
+  partRanges,
   units,
 }: Position): Progress {
   const progress: Progress = {
-    parts: parts.map((part) => {
-      const partUnits: UnitBeatLength[] = units.map((unit) => {
+    parts: partRanges.map((partRange) => {
+      const pause = isPause({ currentBeat, partRange, units });
+      const componentUnits = pause
+        ? collectComponentUnits({
+            unitId: partRange.part.pauseLengthUnitId!,
+            units,
+          })
+        : collectComponentUnits({
+            unitId: partRange.part.lengthUnitId,
+            units,
+          });
+
+      const partUnits: UnitBeatLength[] = componentUnits.map((unit) => {
         const unitBeatLength: UnitBeatLength = {
           unit: unit,
           beatLength: calculateBeatLength({ unitId: unit.id, units }),
@@ -36,7 +48,8 @@ export function calculateProgress({
       });
 
       const partProgess: PartProgress = {
-        part: part,
+        pause,
+        partRange: partRange,
         units: partUnits.map((partUnit) => ({
           unit: partUnit.unit,
           progress: Math.round(
@@ -48,6 +61,28 @@ export function calculateProgress({
     }),
   };
   return progress;
+}
+
+function collectComponentUnits({
+  unitId,
+  units,
+}: {
+  unitId: string;
+  units: Unit[];
+}): Unit[] {
+  const foundUnit = units.find((unit) => unit.id === unitId);
+
+  if (foundUnit) {
+    return [
+      foundUnit,
+      ...collectComponentUnits({
+        unitId: foundUnit.lengthUnit,
+        units,
+      }),
+    ];
+  } else {
+    return [];
+  }
 }
 
 export interface UnitBeatLength {

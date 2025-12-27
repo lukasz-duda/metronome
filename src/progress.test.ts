@@ -26,17 +26,24 @@ describe("calculateProgress", () => {
         lengthUnitId: "u1",
       };
 
+      const partRange1: PartRange = {
+        part: part1,
+        startBeat: 1,
+        endBeat: 8,
+      };
+
       const progress = calculateProgress({
         currentBeat: 5,
 
         units: [unit1],
-        parts: [part1],
+        partRanges: [partRange1],
       });
 
       const expected: Progress = {
         parts: [
           {
-            part: part1,
+            pause: false,
+            partRange: partRange1,
             units: [
               {
                 progress: 25,
@@ -66,31 +73,55 @@ describe("calculateProgress", () => {
       lengthUnit: "u2",
     };
 
+    const unit4: Unit = {
+      id: "u4",
+      name: "",
+      length: 2,
+      lengthUnit: "u1",
+    };
+
+    const unit5: Unit = {
+      id: "u5",
+      name: "",
+      length: 2,
+      lengthUnit: "u4",
+    };
+
     const part1: Part = {
       id: "p1",
       name: "",
       tempoId: "",
       length: 2,
       lengthUnitId: "u3",
+      pauseLength: 2,
+      pauseLengthUnitId: "u5",
+      repetitions: 1,
+    };
+
+    const partRange1: PartRange = {
+      part: part1,
+      startBeat: 1,
+      endBeat: 24,
     };
 
     describe("before part start", () => {
       const progress = calculateProgress({
         currentBeat: 0,
 
-        units: [unit1, unit2, unit3],
-        parts: [part1],
+        units: [unit1, unit2, unit3, unit4, unit5],
+        partRanges: [partRange1],
       });
 
       it("returns progresses of component units", () => {
         const expected: Progress = {
           parts: [
             {
-              part: part1,
+              pause: false,
+              partRange: partRange1,
               units: [
                 {
                   progress: 0,
-                  unit: unit1,
+                  unit: unit3,
                 },
                 {
                   progress: 0,
@@ -98,7 +129,7 @@ describe("calculateProgress", () => {
                 },
                 {
                   progress: 0,
-                  unit: unit3,
+                  unit: unit1,
                 },
               ],
             },
@@ -109,31 +140,68 @@ describe("calculateProgress", () => {
       });
     });
 
-    describe("before just after part start", () => {
+    describe("just after part start", () => {
       const progress = calculateProgress({
         currentBeat: 1,
 
-        units: [unit1, unit2, unit3],
-        parts: [part1],
+        units: [unit1, unit2, unit3, unit4, unit5],
+        partRanges: [partRange1],
       });
 
       it("returns progresses of component units", () => {
         const expected: Progress = {
           parts: [
             {
-              part: part1,
+              pause: false,
+              partRange: partRange1,
               units: [
                 {
-                  progress: 25,
-                  unit: unit1,
+                  progress: 4,
+                  unit: unit3,
                 },
                 {
                   progress: 8,
                   unit: unit2,
                 },
                 {
-                  progress: 4,
-                  unit: unit3,
+                  progress: 25,
+                  unit: unit1,
+                },
+              ],
+            },
+          ],
+        };
+
+        expect(progress).toStrictEqual(expected);
+      });
+    });
+
+    describe("just after first pause start", () => {
+      const progress = calculateProgress({
+        currentBeat: 49,
+
+        units: [unit1, unit2, unit3, unit4, unit5],
+        partRanges: [partRange1],
+      });
+
+      it("returns progresses of component units", () => {
+        const expected: Progress = {
+          parts: [
+            {
+              pause: true,
+              partRange: partRange1,
+              units: [
+                {
+                  progress: 6,
+                  unit: unit5,
+                },
+                {
+                  progress: 13,
+                  unit: unit4,
+                },
+                {
+                  progress: 25,
+                  unit: unit1,
                 },
               ],
             },

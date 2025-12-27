@@ -8,6 +8,7 @@ import {
 } from "@ant-design/icons";
 import { useWakeLock } from "./wake-lock";
 import type { AdvancedMetronomeConfig, Part, Tempo, Unit } from "./config";
+import { PartsProgress } from "./part-progress";
 
 export function AdvancedMetronome({
   units,
@@ -34,8 +35,9 @@ export function AdvancedMetronome({
     setCurrentBeat((prevBeat) => prevBeat + 1);
   }, []);
 
-  const currentTempoId =
-    ranges.find((range) => range.current)?.part.tempoId ?? parts[0].tempoId;
+  const currentRange = ranges.find((range) => range.current);
+
+  const currentTempoId = currentRange?.part.tempoId ?? parts[0].tempoId;
   const bpm = tempos.find((tempo) => tempo.id === currentTempoId)?.bpm ?? 100;
 
   const { start, stop } = useMetronome({ bpm, onBeat: handleBeat });
@@ -99,6 +101,11 @@ export function AdvancedMetronome({
           )}
         </Space>
       </Flex>
+      <PartsProgress
+        currentBeat={currentBeat}
+        partRanges={currentRange ? [currentRange] : []}
+        units={units}
+      />
       <div>
         {ranges.map((range) => (
           <DisplayPart
