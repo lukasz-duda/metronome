@@ -30,6 +30,7 @@ describe("calculateProgress", () => {
         part: part1,
         startBeat: 1,
         endBeat: 8,
+        bpm: 100,
       };
 
       const progress = calculateProgress({
@@ -102,6 +103,7 @@ describe("calculateProgress", () => {
       part: part1,
       startBeat: 1,
       endBeat: 24,
+      bpm: 100,
     };
 
     describe("before part start", () => {
@@ -227,6 +229,7 @@ describe("calculateBeatLength", () => {
       const result = calculateBeatLength({
         unitId: unit1.id,
         units: [unit1],
+        bpm: 100,
       });
 
       expect(result).toStrictEqual(4);
@@ -251,6 +254,7 @@ describe("calculateBeatLength", () => {
         const result = calculateBeatLength({
           unitId: unit3.id,
           units: [unit1, unit2, unit3],
+          bpm: 100,
         });
 
         expect(result).toStrictEqual(24);
@@ -275,6 +279,7 @@ describe("isPause", () => {
     part: part1,
     startBeat: 1,
     endBeat: 5,
+    bpm: 100,
   };
 
   const units = [

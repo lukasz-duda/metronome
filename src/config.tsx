@@ -94,6 +94,14 @@ export const initialConfig: AdvancedMetronomeConfig = {
   ],
   parts: [
     {
+      id: "w1",
+      name: "Warmup",
+      tempoId: "w",
+      length: 5,
+      lengthUnitId: "minute",
+      repetitions: 1,
+    },
+    {
       id: "e1",
       name: "Ascend",
       tempoId: "e",

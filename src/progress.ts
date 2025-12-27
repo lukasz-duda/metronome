@@ -33,16 +33,22 @@ export function calculateProgress({
         ? collectComponentUnits({
             unitId: partRange.part.pauseLengthUnitId!,
             units,
+            bpm: partRange.bpm,
           })
         : collectComponentUnits({
             unitId: partRange.part.lengthUnitId,
             units,
+            bpm: partRange.bpm,
           });
 
       const partUnits: UnitBeatLength[] = componentUnits.map((unit) => {
         const unitBeatLength: UnitBeatLength = {
           unit: unit,
-          beatLength: calculateBeatLength({ unitId: unit.id, units }),
+          beatLength: calculateBeatLength({
+            unitId: unit.id,
+            units,
+            bpm: partRange.bpm,
+          }),
         };
         return unitBeatLength;
       });
@@ -66,9 +72,11 @@ export function calculateProgress({
 function collectComponentUnits({
   unitId,
   units,
+  bpm,
 }: {
   unitId: string;
   units: Unit[];
+  bpm: number;
 }): Unit[] {
   const foundUnit = units.find((unit) => unit.id === unitId);
 
@@ -78,6 +86,7 @@ function collectComponentUnits({
       ...collectComponentUnits({
         unitId: foundUnit.lengthUnit,
         units,
+        bpm,
       }),
     ];
   } else {
@@ -93,9 +102,11 @@ export interface UnitBeatLength {
 export function calculateBeatLength({
   unitId,
   units,
+  bpm,
 }: {
   unitId?: string;
   units: Unit[];
+  bpm: number;
 }): number {
   if (unitId === undefined || unitId === "beat") {
     return 1;
@@ -107,8 +118,11 @@ export function calculateBeatLength({
     const beatLength = calculateBeatLength({
       unitId: found.lengthUnit,
       units: units,
+      bpm,
     });
     return found.length * beatLength;
+  } else if (unitId === "minute") {
+    return bpm;
   } else {
     throw Error(`Unit ${unitId} not found.`);
   }
@@ -132,6 +146,7 @@ export function isPause({
       calculateBeatLength({
         unitId: part.lengthUnitId,
         units,
+        bpm: partRange.bpm,
       });
 
     const pauseBeatLength =
@@ -139,6 +154,7 @@ export function isPause({
       calculateBeatLength({
         unitId: part.pauseLengthUnitId,
         units,
+        bpm: partRange.bpm,
       });
 
     const totalBeatLength = partBeatLength + pauseBeatLength;
@@ -166,4 +182,5 @@ export interface PartRange {
   part: Part;
   startBeat: number;
   endBeat: number;
+  bpm: number;
 }
