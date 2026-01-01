@@ -234,7 +234,7 @@ describe("calculateProgress", () => {
     const unit1: Unit = {
       id: "u1",
       name: "",
-      length: 2,
+      length: 3,
       lengthUnit: "beat",
     };
 
@@ -242,14 +242,16 @@ describe("calculateProgress", () => {
       id: "p2",
       name: "",
       tempoId: "",
+      repetitions: 2,
       length: 1,
       lengthUnitId: "u1",
+      pauseLength: 1,
     };
 
     const partRange2: PartRange = {
       part: part2,
       startBeat: 4,
-      endBeat: 5,
+      endBeat: 11,
       bpm: 100,
     };
 
@@ -274,7 +276,7 @@ describe("calculateProgress", () => {
               partRange: partRange2,
               units: [
                 {
-                  progress: 50,
+                  progress: 33,
                   unit: unit1,
                 },
               ],
@@ -288,7 +290,7 @@ describe("calculateProgress", () => {
 
     describe("beginning of the second part pause", () => {
       const progress = calculateProgress({
-        currentBeat: 4,
+        currentBeat: 9,
 
         units: [unit1],
         partRanges: [partRange1, partRange2],
@@ -307,7 +309,7 @@ describe("calculateProgress", () => {
               partRange: partRange2,
               units: [
                 {
-                  progress: 50,
+                  progress: 67,
                   unit: unit1,
                 },
               ],

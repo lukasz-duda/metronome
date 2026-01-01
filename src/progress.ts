@@ -53,7 +53,11 @@ export function calculateProgress({
         return unitBeatLength;
       });
 
-      const partCurrentBeat = currentBeat - partRange.startBeat + 1;
+      const unitCurrentBeat = calculateUnitCurrentBeat({
+        currentBeat,
+        partRange,
+        units,
+      });
 
       const partProgess: PartProgress = {
         pause,
@@ -61,7 +65,7 @@ export function calculateProgress({
         units: partUnits.map((partUnit) => ({
           unit: partUnit.unit,
           progress: Math.round(
-            ((partCurrentBeat % partUnit.beatLength) / partUnit.beatLength) *
+            ((unitCurrentBeat % partUnit.beatLength) / partUnit.beatLength) *
               100,
           ),
         })),
@@ -187,4 +191,62 @@ export interface PartRange {
   startBeat: number;
   endBeat: number;
   bpm: number;
+}
+function calculateUnitCurrentBeat({
+  currentBeat,
+  partRange,
+  units,
+}: {
+  currentBeat: number;
+  partRange: PartRange;
+  units: Unit[];
+}): number {
+  const part = partRange.part;
+  const repeatCount = part.repetitions ?? 1;
+
+  const partBeatLength =
+    part.length *
+    calculateBeatLength({
+      unitId: part.lengthUnitId,
+      units,
+      bpm: partRange.bpm,
+    });
+
+  if (part.pauseLength && part.pauseLength > 0) {
+    const pauseBeatLength =
+      part.pauseLength *
+      calculateBeatLength({
+        unitId: part.pauseLengthUnitId,
+        units,
+        bpm: partRange.bpm,
+      });
+
+    const totalBeatLength = partBeatLength + pauseBeatLength;
+
+    for (let repatIndex = 0; repatIndex < repeatCount; repatIndex++) {
+      const partStartBeat = partRange.startBeat + repatIndex * totalBeatLength;
+      const partEndBeat = partStartBeat + partBeatLength - 1;
+      const pauseStartBeat = partEndBeat + 1;
+      const pauseEndBeat = pauseStartBeat + pauseBeatLength - 1;
+
+      if (currentBeat >= partStartBeat && currentBeat <= partEndBeat) {
+        return currentBeat - partStartBeat + 1;
+      }
+
+      if (currentBeat >= pauseStartBeat && currentBeat <= pauseEndBeat) {
+        return currentBeat - pauseStartBeat + 1;
+      }
+    }
+  } else {
+    for (let repatIndex = 0; repatIndex < repeatCount; repatIndex++) {
+      const partStartBeat = partRange.startBeat + repatIndex * partBeatLength;
+      const partEndBeat = partStartBeat + partBeatLength - 1;
+
+      if (currentBeat >= partStartBeat && currentBeat <= partEndBeat) {
+        return currentBeat - partStartBeat + 1;
+      }
+    }
+  }
+
+  return currentBeat - partRange.startBeat + 1;
 }
