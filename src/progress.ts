@@ -53,16 +53,20 @@ export function calculateProgress({
         return unitBeatLength;
       });
 
+      const partCurrentBeat = currentBeat - partRange.startBeat + 1;
+
       const partProgess: PartProgress = {
         pause,
         partRange: partRange,
         units: partUnits.map((partUnit) => ({
           unit: partUnit.unit,
           progress: Math.round(
-            ((currentBeat % partUnit.beatLength) / partUnit.beatLength) * 100,
+            ((partCurrentBeat % partUnit.beatLength) / partUnit.beatLength) *
+              100,
           ),
         })),
       };
+
       return partProgess;
     }),
   };

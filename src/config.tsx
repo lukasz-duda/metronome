@@ -158,7 +158,7 @@ export const initialConfig: AdvancedMetronomeConfig = {
       length: 1,
       lengthUnitId: "s6",
       repetitions: 5,
-      pauseLength: 2,
+      pauseLength: 1,
       pauseLengthUnitId: "r6",
     },
   ],

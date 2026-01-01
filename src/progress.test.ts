@@ -214,6 +214,111 @@ describe("calculateProgress", () => {
       });
     });
   });
+
+  describe("two parts", () => {
+    const part1: Part = {
+      id: "p1",
+      name: "",
+      tempoId: "",
+      length: 3,
+      lengthUnitId: "beat",
+    };
+
+    const partRange1: PartRange = {
+      part: part1,
+      startBeat: 1,
+      endBeat: 3,
+      bpm: 100,
+    };
+
+    const unit1: Unit = {
+      id: "u1",
+      name: "",
+      length: 2,
+      lengthUnit: "beat",
+    };
+
+    const part2: Part = {
+      id: "p2",
+      name: "",
+      tempoId: "",
+      length: 1,
+      lengthUnitId: "u1",
+    };
+
+    const partRange2: PartRange = {
+      part: part2,
+      startBeat: 4,
+      endBeat: 5,
+      bpm: 100,
+    };
+
+    describe("beginning of the second part", () => {
+      const progress = calculateProgress({
+        currentBeat: 4,
+
+        units: [unit1],
+        partRanges: [partRange1, partRange2],
+      });
+
+      it("returns progress of the second part", () => {
+        const expected: Progress = {
+          parts: [
+            {
+              pause: false,
+              partRange: partRange1,
+              units: [],
+            },
+            {
+              pause: false,
+              partRange: partRange2,
+              units: [
+                {
+                  progress: 50,
+                  unit: unit1,
+                },
+              ],
+            },
+          ],
+        };
+
+        expect(progress).toStrictEqual(expected);
+      });
+    });
+
+    describe("beginning of the second part pause", () => {
+      const progress = calculateProgress({
+        currentBeat: 4,
+
+        units: [unit1],
+        partRanges: [partRange1, partRange2],
+      });
+
+      it("returns progress of the second part", () => {
+        const expected: Progress = {
+          parts: [
+            {
+              pause: false,
+              partRange: partRange1,
+              units: [],
+            },
+            {
+              pause: false,
+              partRange: partRange2,
+              units: [
+                {
+                  progress: 50,
+                  unit: unit1,
+                },
+              ],
+            },
+          ],
+        };
+
+        expect(progress).toStrictEqual(expected);
+      });
+    });
+  });
 });
 
 describe("calculateBeatLength", () => {
