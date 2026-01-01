@@ -1,3 +1,2 @@
-- different sounds
 - select the set of parts
 - replace json configuration with form
