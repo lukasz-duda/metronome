@@ -18,6 +18,12 @@ export interface Tempo {
   bpm: number;
 }
 
+export type Sound = "click" | "a4";
+
+export const defaultSound: Sound = "click";
+
+export const defaultPauseSound: Sound = "a4";
+
 export interface Part {
   id: string;
   name: string;
@@ -26,6 +32,7 @@ export interface Part {
   lengthUnitId: string;
   pauseLength?: number;
   pauseLengthUnitId?: string;
+  pauseSound?: Sound;
   repetitions?: number;
 }
 

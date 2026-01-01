@@ -3,10 +3,15 @@ import { useMetronome } from "./metronome";
 import { Button, Flex, Space, Typography } from "antd";
 import { CaretRightOutlined, PauseOutlined } from "@ant-design/icons";
 import { useWakeLock } from "./wake-lock";
-import type { AdvancedMetronomeConfig } from "./config";
-import { PartsProgress } from "./part-progress";
+import {
+  defaultPauseSound,
+  defaultSound,
+  type AdvancedMetronomeConfig,
+} from "./config";
+import { PartProgress } from "./part-progress";
 import { calculateRanges, type PartRange } from "./length";
 import { DisplayPart } from "./display-part";
+import { calculateProgress } from "./progress";
 
 export function AdvancedMetronome({
   units,
@@ -38,7 +43,21 @@ export function AdvancedMetronome({
   const currentTempoId = currentRange?.part.tempoId ?? parts[0].tempoId;
   const bpm = tempos.find((tempo) => tempo.id === currentTempoId)?.bpm ?? 100;
 
-  const { start, stop } = useMetronome({ bpm, onBeat: handleBeat });
+  const { parts: partProgresses } = calculateProgress({
+    currentBeat,
+    partRanges: currentRange ? [currentRange] : [],
+    units,
+  });
+
+  const currentPartProgress = partProgresses[0];
+
+  const pause = currentPartProgress?.pause ?? false;
+
+  const sound = pause
+    ? (currentRange?.part.pauseSound ?? defaultPauseSound)
+    : defaultSound;
+
+  const { start, stop } = useMetronome({ bpm, onBeat: handleBeat, sound });
 
   useEffect(() => {
     if (end) {
@@ -99,11 +118,9 @@ export function AdvancedMetronome({
           )}
         </Space>
       </Flex>
-      <PartsProgress
-        currentBeat={currentBeat}
-        partRanges={currentRange ? [currentRange] : []}
-        units={units}
-      />
+      {currentPartProgress && (
+        <PartProgress partProgress={currentPartProgress} />
+      )}
       <div>
         {ranges.map((range) => (
           <DisplayPart

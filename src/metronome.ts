@@ -1,17 +1,22 @@
 import { useCallback, useEffect, useRef } from "react";
+import type { Sound } from "./config";
 
 export interface MetronomeProps {
   bpm: number;
   onBeat?: () => void;
+  sound?: Sound;
 }
 
 export interface MetronomeResult {
   start: () => Promise<void>;
   stop: () => void;
-  setBpm: (bpm: number) => void;
 }
 
-export function useMetronome({ bpm, onBeat }: MetronomeProps): MetronomeResult {
+export function useMetronome({
+  bpm,
+  onBeat,
+  sound,
+}: MetronomeProps): MetronomeResult {
   const audioCtxRef = useRef<AudioContext | null>(null);
   const schedulerIdRef = useRef<number | null>(null);
   const startTimeRef = useRef<number | null>(null);
@@ -50,6 +55,38 @@ export function useMetronome({ bpm, onBeat }: MetronomeProps): MetronomeResult {
     osc.stop(time + 0.05);
   }, []);
 
+  const playFrequency = useCallback((time: number, frequency: number) => {
+    const ctx = audioCtxRef.current!;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = "triangle";
+    osc.frequency.value = frequency;
+
+    osc.connect(gain).connect(ctx.destination);
+
+    osc.start(time);
+    osc.stop(time + 0.05);
+  }, []);
+
+  const soundRef = useRef(sound);
+
+  const playSound = useCallback(
+    (time: number) => {
+      switch (soundRef.current) {
+        case "a4":
+          playFrequency(time, 440);
+          break;
+        case "click":
+        default:
+          playClick(time);
+          break;
+      }
+    },
+    [playClick, playFrequency],
+  );
+
   const audioTimeToDomTime = (ctx: AudioContext, audioTime: number) => {
     const nowAudio = ctx.currentTime;
     const nowDom = performance.now();
@@ -63,7 +100,7 @@ export function useMetronome({ bpm, onBeat }: MetronomeProps): MetronomeResult {
       const audioTime = nextBeatTimeRef.current;
       const domTime = audioTimeToDomTime(ctx, audioTime);
 
-      playClick(audioTime);
+      playSound(audioTime);
       if (nextBeatTimeRef.current !== startTimeRef.current)
         setTimeout(() => {
           onBeat?.();
@@ -71,7 +108,7 @@ export function useMetronome({ bpm, onBeat }: MetronomeProps): MetronomeResult {
 
       nextBeatTimeRef.current += 60 / bpmRef.current;
     }
-  }, [playClick, onBeat]);
+  }, [playSound, onBeat]);
 
   const start = useCallback(async () => {
     const ctx = await ensureContext();
@@ -93,13 +130,13 @@ export function useMetronome({ bpm, onBeat }: MetronomeProps): MetronomeResult {
     }
   }, []);
 
-  const setBpm = useCallback((newBpm: number) => {
-    bpmRef.current = newBpm;
-  }, []);
-
   useEffect(() => {
     bpmRef.current = bpm;
   }, [bpm]);
 
-  return { start, stop, setBpm };
+  useEffect(() => {
+    soundRef.current = sound;
+  }, [sound]);
+
+  return { start, stop };
 }

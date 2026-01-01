@@ -1,24 +1,7 @@
 import { Progress, Space, Typography } from "antd";
-import type { Unit } from "./config";
-import { calculateProgress, type PartRange } from "./progress";
+import { type PartProgress } from "./progress";
 
-export function PartsProgress({
-  currentBeat,
-  partRanges,
-  units,
-}: {
-  currentBeat: number;
-  partRanges: PartRange[];
-  units: Unit[];
-}) {
-  const { parts } = calculateProgress({
-    currentBeat,
-    partRanges,
-    units,
-  });
-
-  const partProgress = parts[0];
-
+export function PartProgress({ partProgress }: { partProgress: PartProgress }) {
   return (
     <Space vertical>
       {partProgress &&
