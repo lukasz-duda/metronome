@@ -1,2 +1,3 @@
+- play the pause sound for the correct current beat
 - select the set of parts
 - replace json configuration with form

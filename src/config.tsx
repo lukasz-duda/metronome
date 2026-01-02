@@ -97,7 +97,7 @@ export const initialConfig: AdvancedMetronomeConfig = {
   ],
   tempos: [
     { id: "w", name: "warmup", bpm: 100 },
-    { id: "e", name: "exerice", bpm: 140 },
+    { id: "e", name: "exercise", bpm: 140 },
   ],
   parts: [
     {
